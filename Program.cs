@@ -18,6 +18,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
+// Swaggerのサービス登録
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,6 +32,13 @@ if (app.Environment.IsDevelopment())
 
 // CORSを有効にする
 app.UseCors("AllowAngularApp");
+
+// Swaggerのミドルウェア追加
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
