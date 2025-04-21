@@ -16,6 +16,16 @@ namespace MyApi.Controllers
             return Ok(memos);
         }
 
+        [HttpGet("{id}")]
+        public ActionResult<Memo> GetById(int id)
+        {
+            var memo = memos.Find(m => m.Id == id);
+            if (memo == null)
+            {
+                return NotFound();
+            }
+            return Ok(memo);
+        }
         [HttpPost]
         public ActionResult<Memo> Add([FromBody] Memo newMemo)
         {
@@ -42,6 +52,13 @@ namespace MyApi.Controllers
 
             memo.Status = newStatus;
             return Ok(memo);
+        }
+
+        [HttpGet("status/{status}")]
+        public ActionResult<IEnumerable<Memo>> GetByStatus(string status)
+        {
+            var filtered = memos.Where(m => m.Status == status).ToList();
+            return Ok(filtered);
         }
     }
 }
