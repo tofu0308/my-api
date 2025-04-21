@@ -13,6 +13,6 @@ namespace MyApi.Models
     {
         public int Id { get; set; }
         public string Title { get; set; }
-        public string MemoStatus { get; set; } // "active", "done", "archived"
+        public MemoStatus Status { get; set; }
     }
 }
