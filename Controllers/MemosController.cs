@@ -45,7 +45,7 @@ namespace MyApi.Controllers
         }
 
         [HttpPatch("{id}/status")]
-        public ActionResult UpdateStatus(int id, [FromBody] string newStatus)
+        public ActionResult UpdateStatus(int id, [FromBody] MemoStatus newStatus)
         {
             var memo = memos.FirstOrDefault(m => m.Id == id);
             if (memo == null) return NotFound();
