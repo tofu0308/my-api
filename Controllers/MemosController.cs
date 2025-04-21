@@ -55,7 +55,7 @@ namespace MyApi.Controllers
         }
 
         [HttpGet("status/{status}")]
-        public ActionResult<IEnumerable<Memo>> GetByStatus(string status)
+        public ActionResult<IEnumerable<Memo>> GetByStatus(MemoStatus status)
         {
             var filtered = memos.Where(m => m.Status == status).ToList();
             return Ok(filtered);
