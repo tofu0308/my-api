@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MyApi.Models;
+using angular_azure_demo.Models;
 
 namespace MyApi.Controllers
 {
@@ -45,12 +46,12 @@ namespace MyApi.Controllers
         }
 
         [HttpPatch("{id}/status")]
-        public ActionResult UpdateStatus(int id, [FromBody] MemoStatus newStatus)
+        public ActionResult UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
         {
             var memo = memos.FirstOrDefault(m => m.Id == id);
             if (memo == null) return NotFound();
 
-            memo.Status = newStatus;
+            memo.Status = request.Status;
             return Ok(memo);
         }
 
