@@ -48,6 +48,12 @@ namespace MyApi.Controllers
         [HttpPatch("{id}/status")]
         public ActionResult UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
         {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var memo = memos.FirstOrDefault(m => m.Id == id);
             if (memo == null) return NotFound();
 
