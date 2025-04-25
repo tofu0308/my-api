@@ -12,9 +12,21 @@ namespace MyApi.Controllers
         private static int nextId = 1;
 
         [HttpGet]
-        public ActionResult<IEnumerable<Memo>> GetAll()
+        public ActionResult<MemoListResponse> GetAll()
         {
-            return Ok(memos);
+            var summary = new MemoSummary
+            {
+                TotalCount = memos.Count,
+                CompletedCount = memos.Count(m => m.Status == MemoStatus.Completed)
+            };
+
+            var response = new MemoListResponse
+            {
+                Items = memos,
+                Summary = summary
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
