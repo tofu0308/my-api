@@ -16,6 +16,10 @@ builder.Services.AddCors(options =>
         });
 });
 
+// DbContextの登録
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("MemoDb"));
+
 builder.Services.AddControllers();
 
 // Swaggerのサービス登録
@@ -49,7 +53,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
