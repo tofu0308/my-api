@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using angular_azure_demo.Models;
 
@@ -8,76 +9,62 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class MemosController : ControllerBase
     {
-        private static List<Memo> memos = new List<Memo>();
-        private static int nextId = 1;
+        private readonly AppDbContext _context;
+
+        public MemoController(AppDbContext context)
+        {
+            _context = context;
+        }
 
         [HttpGet]
-        public ActionResult<MemoListResponse> GetAll()
+        public async Task<ActionResult<IEnumerable<Memo>>> GetMemos()
         {
-            var summary = new MemoSummary
-            {
-                TotalCount = memos.Count,
-                CompletedCount = memos.Count(m => m.Status == MemoStatus.Completed)
-            };
+            return await _context.Memos.ToListAsync();
+        }
 
-            var response = new MemoListResponse
-            {
-                Items = memos,
-                Summary = summary
-            };
-
-            return Ok(response);
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Memo>>> GetMemos()
+        {
+            return await _context.Memos.ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Memo> GetById(int id)
+        public async Task<ActionResult<Memo>> GetMemo(int id)
         {
-            var memo = memos.Find(m => m.Id == id);
-            if (memo == null)
-            {
-                return NotFound();
-            }
-            return Ok(memo);
+            var memo = await _context.Memos.FindAsync(id);
+            return memo == null ? NotFound() : Ok(memo);
         }
+
         [HttpPost]
-        public ActionResult<Memo> Add([FromBody] Memo newMemo)
+        public async Task<ActionResult<Memo>> PostMemo(Memo memo)
         {
-            newMemo.Id = nextId++;
-            memos.Add(newMemo);
-            return CreatedAtAction(nameof(GetAll), new { id = newMemo.Id }, newMemo);
+            _context.Memos.Add(memo);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetMemo), new { id = memo.Id }, memo);
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutMemo(int id, Memo memo)
         {
-            var memo = memos.FirstOrDefault(m => m.Id == id);
-            if (memo == null) return NotFound();
+            if (id != memo.Id)
+                return BadRequest();
 
-            memos.Remove(memo);
+            _context.Entry(memo).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
-        [HttpPatch("{id}/status")]
-        public ActionResult UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMemo(int id)
         {
+            var memo = await _context.Memos.FindAsync(id);
+            if (memo == null)
+                return NotFound();
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            _context.Memos.Remove(memo);
+            await _context.SaveChangesAsync();
 
-            var memo = memos.FirstOrDefault(m => m.Id == id);
-            if (memo == null) return NotFound();
-
-            memo.Status = request.Status;
-            return Ok(memo);
-        }
-
-        [HttpGet("status/{status}")]
-        public ActionResult<IEnumerable<Memo>> GetByStatus(MemoStatus status)
-        {
-            var filtered = memos.Where(m => m.Status == status).ToList();
-            return Ok(filtered);
+            return NoContent();
         }
     }
-}
