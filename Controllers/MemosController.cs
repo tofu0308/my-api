@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
+using MyApi.Data;
 using angular_azure_demo.Models;
 
 namespace MyApi.Controllers
@@ -14,12 +15,6 @@ namespace MyApi.Controllers
         public MemoController(AppDbContext context)
         {
             _context = context;
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Memo>>> GetMemos()
-        {
-            return await _context.Memos.ToListAsync();
         }
 
         [HttpGet]
@@ -68,3 +63,4 @@ namespace MyApi.Controllers
             return NoContent();
         }
     }
+}
