@@ -12,7 +12,7 @@ namespace MyApi.Controllers
     {
         private readonly AppDbContext _context;
 
-        public MemoController(AppDbContext context)
+        public MemosController(AppDbContext context)
         {
             _context = context;
         }
