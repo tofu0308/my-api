@@ -52,13 +52,14 @@ namespace MyApi.Controllers
             return CreatedAtAction(nameof(GetMemo), new { id = memo.Id }, memo);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMemo(int id, Memo memo)
-        {
-            if (id != memo.Id)
-                return BadRequest();
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateMemoStatus(int id, [FromBody] MemoStatusUpdateRequest request)
 
-            _context.Entry(memo).State = EntityState.Modified;
+        {
+            var memo = await _context.Memos.FindAsync(id);
+            if (memo == null) return NotFound();
+
+            memo.Status = request.Status;
             await _context.SaveChangesAsync();
 
             return NoContent();

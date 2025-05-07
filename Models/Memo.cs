@@ -15,4 +15,8 @@ namespace MyApi.Models
         public string Title { get; set; }
         public MemoStatus Status { get; set; }
     }
+    public class MemoStatusUpdateRequest
+    {
+        public MemoStatus Status { get; set; }
+    }
 }
