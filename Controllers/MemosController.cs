@@ -18,9 +18,23 @@ namespace MyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Memo>>> GetMemos()
+        public async Task<ActionResult<MemoListResponse>> GetMemos()
         {
-            return await _context.Memos.ToListAsync();
+            var memos = await _context.Memos.ToListAsync();
+
+            var summary = new MemoSummary
+            {
+                TotalCount = memos.Count,
+                CompletedCount = memos.Count(m => m.Status == MemoStatus.Completed)
+            };
+
+            var response = new MemoListResponse
+            {
+                Items = memos,
+                Summary = summary
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
