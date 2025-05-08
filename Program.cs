@@ -21,8 +21,9 @@ builder.Services.AddCors(options =>
 });
 
 // DbContextの登録
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("MemoDb"));
+    options.UseSqlite(connectionString));
 
 builder.Services.AddControllers();
 
