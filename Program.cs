@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
+using MyApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +74,20 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapControllers();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.Memos.Any())
+    {
+        context.Memos.AddRange(
+            new Memo { Title = "初期メモ1", Status = MemoStatus.ToDo },
+            new Memo { Title = "初期メモ2", Status = MemoStatus.Completed }
+        );
+        context.SaveChanges();
+    }
+}
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
