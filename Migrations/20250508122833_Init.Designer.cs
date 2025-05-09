@@ -10,8 +10,8 @@ using MyApi.Data;
 namespace my_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250508121639_SeedData")]
-    partial class SeedData
+    [Migration("20250508122833_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
