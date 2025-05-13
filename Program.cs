@@ -21,10 +21,16 @@ builder.Services.AddCors(options =>
         });
 });
 
-// DbContextの登録
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// 環境名（例：Development, Production など）に応じた appsettings ファイルを読み込む
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// DbContext に接続文字列を適用
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 
