@@ -39,8 +39,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddControllers();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"接続文字列: {connectionString}");
+var env = builder.Environment.EnvironmentName;
+Console.WriteLine($"【現在の環境】{env}");
+
+var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"【使用されている接続文字列】{conn}");
+
 
 // Swaggerのサービス登録
 builder.Services.AddEndpointsApiExplorer();
