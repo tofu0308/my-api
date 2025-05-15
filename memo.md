@@ -1,0 +1,1 @@
+- \*.db ファイルを作ろうとしたが、指定したディレクトリがなく `ASPNETCORE_ENVIRONMENT=Production dotnet run` に失敗。ディレクトリを生成後再トライで成功。
