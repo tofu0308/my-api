@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
 using MyApi.Models;
+using MyApi.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,21 +29,24 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // DbContext に接続文字列を適用
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var dbPath = connectionString.Replace("Data Source=", "");
 
 // 環境に応じたパスの設定
 if (builder.Environment.IsDevelopment())
 {
     // 開発環境では相対パスを絶対パスに変換
-    dbPath = Path.Combine(AppContext.BaseDirectory, dbPath);
+    var baseDir = AppContext.BaseDirectory;
+    dbPath = Path.Combine(baseDir, "Database", "dev-memos.db");
+    // データベースディレクトリを作成
+    Directory.CreateDirectory(Path.Combine(baseDir, "Database"));
 }
 else
 {
     // 本番環境では指定されたパスをそのまま使用
-    // Databaseディレクトリが存在することを確認
     var databaseDir = Path.GetDirectoryName(dbPath);
-    if (!Directory.Exists(databaseDir))
+    if (!string.IsNullOrEmpty(databaseDir))
     {
         Directory.CreateDirectory(databaseDir);
     }
@@ -68,10 +72,7 @@ Console.WriteLine($"【使用されている接続文字列】{conn}");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Logging.AddConsole(options =>
-{
-    options.IncludeScopes = true;
-});
+builder.Logging.AddConsole();
 
 builder.Services.AddHealthChecks()
     .AddCheck<SqliteHealthCheck>("Database");

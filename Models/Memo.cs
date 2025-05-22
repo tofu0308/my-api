@@ -12,7 +12,7 @@ namespace MyApi.Models
     public class Memo
     {
         public int Id { get; set; }
-        public string Title { get; set; }
+        public required string Title { get; set; }
         public MemoStatus Status { get; set; }
     }
     public class MemoStatusUpdateRequest
