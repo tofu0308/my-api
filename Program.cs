@@ -1,14 +1,8 @@
-
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
 using MyApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// SQLiteパスを絶対パスにして設定
-var relativePath = builder.Configuration.GetConnectionString("DefaultConnection");
-var absolutePath = Path.Combine(AppContext.BaseDirectory, relativePath.Replace("Data Source=", ""));
-builder.Configuration["ConnectionStrings:DefaultConnection"] = $"Data Source={absolutePath}";
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -20,7 +14,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngularApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular開発サーバーのURL
+            policy.WithOrigins("https://zealous-sand-0eede5a1e.6.azurestaticapps.net")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -34,6 +28,30 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // DbContext に接続文字列を適用
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var dbPath = connectionString.Replace("Data Source=", "");
+
+// 環境に応じたパスの設定
+if (builder.Environment.IsDevelopment())
+{
+    // 開発環境では相対パスを絶対パスに変換
+    dbPath = Path.Combine(AppContext.BaseDirectory, dbPath);
+}
+else
+{
+    // 本番環境では指定されたパスをそのまま使用
+    // Databaseディレクトリが存在することを確認
+    var databaseDir = Path.GetDirectoryName(dbPath);
+    if (!Directory.Exists(databaseDir))
+    {
+        Directory.CreateDirectory(databaseDir);
+    }
+}
+
+// 接続文字列を更新
+builder.Configuration["ConnectionStrings:DefaultConnection"] = $"Data Source={dbPath}";
+
+// SQLiteを使用するように設定
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -50,23 +68,29 @@ Console.WriteLine($"【使用されている接続文字列】{conn}");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Logging.AddConsole(options =>
+{
+    options.IncludeScopes = true;
+});
+
+builder.Services.AddHealthChecks()
+    .AddCheck<SqliteHealthCheck>("Database");
+
 var app = builder.Build();
+
+// Production でもエラー詳細を見るために一時的に追加
+app.UseDeveloperExceptionPage();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 // CORSを有効にする
 app.UseCors("AllowAngularApp");
-
-// Swaggerのミドルウェア追加
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 
@@ -92,10 +116,15 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapControllers();
 
+app.MapHealthChecks("/health");
 
+// データベースの初期化
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    
+    // データベースが存在しない場合は作成
+    context.Database.EnsureCreated();
 
     if (!context.Memos.Any())
     {
